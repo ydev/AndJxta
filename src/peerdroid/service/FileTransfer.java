@@ -79,7 +79,7 @@ public class FileTransfer {
 		}
 	}
 
-	public void receiveFilePackage(Message msg) {
+	public void receiveFilePackage(final Jxta jxtaService, Message msg) {
 		String from = msg.getMessageElement("From").toString();
 		String fromName = msg.getMessageElement("FromName").toString();
 

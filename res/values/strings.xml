@@ -1,5 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="hello">Hello World, JXTA4Android!</string>
-    <string name="app_name">JXTA4Android</string>
+    <string name="lblPeerListHeader">Peer List:</string>
+    <string name="btnSendText">send</string>
+    
+    <string name="btnStartText">Start P2P Network...</string>
+    <string name="txtInstanceNameText">mirko</string>
+    
+    <string name="app_name">JxtaApp</string>
+<string name="txtSeedingServerText">http://192.168.178.71/seeds.txt</string>
+<string name="conChat">Start chatting...</string>
+<string name="conFile">Start file transfer...</string>
+<string name="lblUsername">Username:</string>
+<string name="lblSeedingServerURL">Seeding Server URL:</string>
 </resources>

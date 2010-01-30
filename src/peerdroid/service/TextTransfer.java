@@ -43,13 +43,24 @@ public class TextTransfer {
 		Log.d(JxtaApp.TAG, "Message was send");
 	}
 
-	public void receiveText(Message msg) {
-		String from = msg.getMessageElement("From").toString();
-		String fromName = msg.getMessageElement("FromName").toString();
-		String content = msg.getMessageElement("Content").toString();
+	public void receiveText(final Jxta jxtaService, Message msg) {
+		final String from = msg.getMessageElement("From").toString();
+		final String fromName = msg.getMessageElement("FromName").toString();
+		final String content = msg.getMessageElement("Content").toString();
 
 		Log.d(JxtaApp.TAG, "MESSAGE FROM " + new String(fromName) + " ("
 				+ new Date() + "): " + new String(content) + " (PeerID: "
 				+ new String(from) + ")");
+
+		JxtaApp.handler.post(new Runnable() {
+			public void run() {
+				Peer peer = jxtaService.getPeerByName(fromName);
+				peer
+						.addHistory(fromName + " (" + new Date() + "):\n"
+								+ content);
+				JxtaApp.txtChatHistory.append("\n" + fromName + " ("
+						+ new Date() + "):\n" + content);
+			}
+		});
 	}
 }

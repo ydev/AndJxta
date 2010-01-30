@@ -73,6 +73,7 @@ public class Rendezvous implements RendezvousListener {
 	}
 
 	public void waitForRdv() {
+		Log.d(JxtaApp.TAG, "Try connecting to rendezvous peer...");
 		synchronized (rdvlock) {
 			while (!peerGroupRendezvous.isConnectedToRendezVous()) {
 				Log.d(JxtaApp.TAG, "Awaiting rendezvous connection...");
@@ -84,8 +85,8 @@ public class Rendezvous implements RendezvousListener {
 					;
 				}
 			}
-			Log.d(JxtaApp.TAG, "Connected to rendezvous peer");
 		}
+		Log.d(JxtaApp.TAG, "Connected to rendezvous peer");
 	}
 
 	public void setConnected(boolean connected) {

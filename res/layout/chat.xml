@@ -3,10 +3,10 @@
   xmlns:android="http://schemas.android.com/apk/res/android"
   android:layout_width="wrap_content"
   android:layout_height="wrap_content">
-<ScrollView android:layout_height="wrap_content" android:layout_width="fill_parent" android:id="@+id/scrChat"><TextView android:layout_height="wrap_content" android:layout_width="fill_parent" android:id="@+id/txtChat"></TextView></ScrollView>
+<ScrollView android:layout_height="wrap_content" android:layout_width="fill_parent" android:id="@+id/scrChat"><TextView android:layout_height="wrap_content" android:layout_width="fill_parent" android:id="@+id/txtChatHistory"></TextView></ScrollView>
 
 
-<Button android:layout_width="wrap_content" android:layout_height="wrap_content" android:id="@+id/btnSend" android:text="send" android:layout_alignParentRight="true" android:layout_below="@+id/scrChat"></Button><EditText android:layout_toLeftOf="@+id/btnSend" android:layout_below="@+id/scrChat" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="m1" android:id="@+id/txtPeer"></EditText><EditText android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_below="@+id/scrChat" android:text="test message" android:id="@+id/txtMessage" android:layout_toLeftOf="@+id/txtPeer"></EditText>
+<Button android:layout_width="wrap_content" android:layout_height="wrap_content" android:id="@+id/btnSend" android:text="send" android:layout_alignParentRight="true" android:layout_below="@+id/scrChat"></Button><EditText android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_below="@+id/scrChat" android:text="test message" android:id="@+id/txtMessage" android:layout_toLeftOf="@+id/btnSend"></EditText>
 
 
 

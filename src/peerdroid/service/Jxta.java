@@ -47,7 +47,16 @@ public class Jxta implements PipeMsgListener {
 	public static final String MESSAGE_TYPE_TEXT = "TEXT";
 	public static final String MESSAGE_TYPE_FILE = "FILE";
 	
-	public void start(String name, File cache, String user,
+	public void setup(String name, File cache, String user,
+			String pass, String rendezvousServerListURI) {
+		instanceName = name;
+		cacheHome = cache;
+		username = user;
+		password = pass;
+		rdvlist = rendezvousServerListURI;
+	}
+	
+	public void start111(String name, File cache, String user,
 			String pass) {
 		instanceName = name;
 		cacheHome = cache;
@@ -61,14 +70,7 @@ public class Jxta implements PipeMsgListener {
 			e.printStackTrace();
 		}
 		
-		// discovery
-		Thread discoveryServerThread = new Thread(discovery = new Discovery(networkManager, instanceName, this), "Discovery Thread");
-		discoveryServerThread.start();
-		
-		establishedPipes = new HashMap<String, OutputPipe>();
-		
-		fileTransferService = new FileTransfer(netPeerGroup.getPeerID().toString(), instanceName);
-		textTransferService = new TextTransfer(netPeerGroup.getPeerID().toString(), instanceName);
+		startDiscovery();
 		
 		//waitForInput();
 		waitForQuit();
@@ -83,7 +85,7 @@ public class Jxta implements PipeMsgListener {
 		netPeerGroup.stopApp();
 	}
 
-	private void configureJXTA() {
+	public void configureJXTA() {
 		try {
 			networkManager = new NetworkManager(NetworkManager.EDGE,
 					instanceName, new File(cacheHome, instanceName).toURI());
@@ -147,8 +149,10 @@ public class Jxta implements PipeMsgListener {
 		this.actAsRendezvous = actAsRendezvous;
 	}
 	
-	private void startJXTA() throws Throwable {
+	public void startJXTA() throws Throwable {
+		Log.d(JxtaApp.TAG, "Starting network...");
 		netPeerGroup = networkManager.startNetwork();
+		Log.d(JxtaApp.TAG, "Network started");
 
 		if (actAsRendezvous) {
 			netPeerGroup.getRendezVousService().startRendezVous();
@@ -157,6 +161,16 @@ public class Jxta implements PipeMsgListener {
 			Rendezvous rendezvousService = new Rendezvous(netPeerGroup);
 			rendezvousService.waitForRdv();
 		}
+		
+		establishedPipes = new HashMap<String, OutputPipe>();
+		
+		fileTransferService = new FileTransfer(netPeerGroup.getPeerID().toString(), instanceName);
+		textTransferService = new TextTransfer(netPeerGroup.getPeerID().toString(), instanceName);
+	}
+	
+	public void startDiscovery() {
+		Thread discoveryServerThread = new Thread(discovery = new Discovery(networkManager, instanceName, this), "Discovery Thread");
+		discoveryServerThread.start();
 	}
 	
 	private void waitForInput() {
@@ -186,33 +200,37 @@ public class Jxta implements PipeMsgListener {
 		}.start();
 	}
 	
-	public void sendMsgToPeer(String peername, String message) {
+	public boolean sendMsgToPeer(String peername, String message) {
 		PipeAdvertisement peer = getPipeAdvertisementByName(peername);
 		
 		if (peer == null) {
 			Log.d(JxtaApp.TAG, "Peer not found while discovery");
-			return;
+			return false;
 		}
 		
 		OutputPipe pipe = setupPipe(peer);
 		
 		if (pipe == null) {
 			Log.d(JxtaApp.TAG, "Cannot setup pipe to this peer");
-			return;
+			return false;
 		}
 		
-		if (message.equals("file")) {
-			fileTransferService.sendFile(pipe, "pic.jpg");
-		} else {
-			textTransferService.sendText(pipe, message);
-		}
+		textTransferService.sendText(pipe, message);
+		//fileTransferService.sendFile(pipe, "pic.jpg");
 
 		// don't close, hold all open pipes for later use
 		// closePipe(pipe, peer);
+		
+		return true;
 	}
 	
-	private PipeAdvertisement getPipeAdvertisementByName(String peername) {
+	public PipeAdvertisement getPipeAdvertisementByName(String peername) {
 		PipeAdvertisement peer = null;
+		return getPeerByName(peername).getPipeAdvertisement();
+	}
+	
+	public Peer getPeerByName(String peername) {
+		Peer peer = null;
 		
 		Log.d(JxtaApp.TAG, "Try to find peer in discovery list...");
 		
@@ -220,7 +238,7 @@ public class Jxta implements PipeMsgListener {
 			for (int i = 0; i < discovery.getPeerList().size(); i++) {
 				//Log.d(JXTA4JSE.TAG, discoveryClient.getPeerList().get(i).getName() + " == " + peername);
 				if (discovery.getPeerList().get(i).getName() != null && discovery.getPeerList().get(i).getName().equals(peername)) {
-					peer = discovery.getPeerList().get(i).getPipeAdvertisement();
+					peer = discovery.getPeerList().get(i);
 				}
 			}
 		}
@@ -246,9 +264,10 @@ public class Jxta implements PipeMsgListener {
 		PipeService pipeService = netPeerGroup.getPipeService();
 		OutputPipe outputPipe = null;
 		try {
-			outputPipe = pipeService.createOutputPipe(peerAdv, 3 * 60 * 1000);
+			outputPipe = pipeService.createOutputPipe(peerAdv, 1 * 60 * 1000);
 		} catch (IOException e) {
 			e.printStackTrace();
+			//JxtaApp.txtChatHistory.append("\n" + e);
 			return null;
 		}
 		
@@ -274,10 +293,10 @@ public class Jxta implements PipeMsgListener {
 		Message msg = event.getMessage();
 
 		if (msg.getMessageElement("Type").toString().equals(MESSAGE_TYPE_TEXT)) {
-			textTransferService.receiveText(msg);
+			textTransferService.receiveText(this, msg);
 		} else if (msg.getMessageElement("Type").toString().equals(
 				MESSAGE_TYPE_FILE)) {
-			fileTransferService.receiveFilePackage(msg);
+			fileTransferService.receiveFilePackage(this, msg);
 		} else {
 			Log.d(JxtaApp.TAG, "No Service for this message type!");
 		}
@@ -293,5 +312,8 @@ public class Jxta implements PipeMsgListener {
 			}
 		}
 	}
-
+	
+	public Discovery getDiscovery() {
+		return discovery;
+	}
 }

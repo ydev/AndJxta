@@ -2,7 +2,11 @@ package peerdroid.service;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import net.jxta.discovery.DiscoveryEvent;
 import net.jxta.discovery.DiscoveryListener;
@@ -28,7 +32,7 @@ public class Discovery implements Runnable, DiscoveryListener {
 	private PipeMsgListener pipeMsgListener;
 	private DiscoveryService discoveryService;
 	private PipeService pipeService;
-	private ArrayList<Peer> peerList = new ArrayList<Peer>();
+	private List<Peer> peerList;
 
 	private PipeAdvertisement advertisement;
 	private ID advertisementPipeId;
@@ -39,6 +43,8 @@ public class Discovery implements Runnable, DiscoveryListener {
 		this.manager = manager;
 		this.instanceName = instanceName;
 		this.pipeMsgListener = pipeMsgListener;
+		
+		peerList = Collections.synchronizedList(new ArrayList<Peer>());
 
 		PeerGroup netPeerGroup = manager.getNetPeerGroup();
 		discoveryService = netPeerGroup.getDiscoveryService();
@@ -53,9 +59,9 @@ public class Discovery implements Runnable, DiscoveryListener {
 	}
 
 	public void run() {
-		long lifetime = 10 * 60 * 1000;
-		long expiration = 10 * 60 * 1000;
-		long waittime = 1 * 60 * 1000;
+		long lifetime = 60 * 60 * 1000;
+		long expiration = 60 * 60 * 1000;
+		long waittime = 2 * 60 * 1000;
 
 		// setup discovery server
 		try {
@@ -146,7 +152,7 @@ public class Discovery implements Runnable, DiscoveryListener {
 	 * @param ev
 	 *            the discovery event
 	 */
-	public void discoveryEvent(DiscoveryEvent ev) {
+	public synchronized void discoveryEvent(DiscoveryEvent ev) {
 		DiscoveryResponseMsg res = ev.getResponse();
 		String name = "unknown";
 
@@ -201,9 +207,27 @@ public class Discovery implements Runnable, DiscoveryListener {
 			peerList.remove(peer);
 		}
 		peerList.add(peer);
+
+		JxtaApp.handler.post(new Runnable() {
+			public void run() {
+				synchronized (peerList) {
+					//JxtaApp.lstPeerListElements.clear();
+					
+					for (Peer peer : peerList) {
+						Map<String, String> map = new HashMap<String, String>();
+						map.put("name", peer.getName());
+						map.put("desc", peer.getPipeAdvertisement().getDescription());
+						map.put("adv", peer.getPipeAdvertisement().getPipeID().toString());
+						JxtaApp.lstPeerListElements.add(map);
+					}
+				}
+				
+				JxtaApp.lstPeerListAdapter.notifyDataSetChanged();
+			}
+		});
 	}
 
-	public synchronized ArrayList<Peer> getPeerList() {
+	public synchronized List<Peer> getPeerList() {
 		return peerList;
 	}
 
