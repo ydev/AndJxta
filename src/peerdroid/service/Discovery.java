@@ -2,7 +2,6 @@ package peerdroid.service;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Enumeration;
 
 import net.jxta.discovery.DiscoveryEvent;
@@ -10,12 +9,10 @@ import net.jxta.discovery.DiscoveryListener;
 import net.jxta.discovery.DiscoveryService;
 import net.jxta.document.Advertisement;
 import net.jxta.document.AdvertisementFactory;
-import net.jxta.endpoint.Message;
 import net.jxta.id.ID;
 import net.jxta.id.IDFactory;
 import net.jxta.peergroup.PeerGroup;
 import net.jxta.peergroup.PeerGroupID;
-import net.jxta.pipe.PipeMsgEvent;
 import net.jxta.pipe.PipeMsgListener;
 import net.jxta.pipe.PipeService;
 import net.jxta.platform.NetworkManager;
@@ -25,9 +22,10 @@ import net.jxta.protocol.PipeAdvertisement;
 import peerdroid.jxta4android.JxtaApp;
 import android.util.Log;
 
-public class Discovery implements Runnable, PipeMsgListener, DiscoveryListener {
+public class Discovery implements Runnable, DiscoveryListener {
 	private NetworkManager manager;
 	private String instanceName;
+	private PipeMsgListener pipeMsgListener;
 	private DiscoveryService discoveryService;
 	private PipeService pipeService;
 	private ArrayList<Peer> peerList = new ArrayList<Peer>();
@@ -37,9 +35,10 @@ public class Discovery implements Runnable, PipeMsgListener, DiscoveryListener {
 	private String advertisementType;
 	private String advertisementName;
 
-	public Discovery(NetworkManager manager, String instanceName) {
+	public Discovery(NetworkManager manager, String instanceName, PipeMsgListener pipeMsgListener) {
 		this.manager = manager;
 		this.instanceName = instanceName;
+		this.pipeMsgListener = pipeMsgListener;
 
 		PeerGroup netPeerGroup = manager.getNetPeerGroup();
 		discoveryService = netPeerGroup.getDiscoveryService();
@@ -60,7 +59,7 @@ public class Discovery implements Runnable, PipeMsgListener, DiscoveryListener {
 
 		// setup discovery server
 		try {
-			pipeService.createInputPipe(getPipeAdvertisement(), this);
+			pipeService.createInputPipe(getPipeAdvertisement(), pipeMsgListener);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -137,28 +136,6 @@ public class Discovery implements Runnable, PipeMsgListener, DiscoveryListener {
 
 	public PipeAdvertisement getPipeAdvertisement() {
 		return advertisement;
-	}
-
-	/**
-	 * @see Discovery
-	 */
-	public void pipeMsgEvent(PipeMsgEvent event) {
-		Message msg = event.getMessage();
-		final byte[] msgBytes = msg.getMessageElement("Msg").getBytes(true);
-		byte[] fromBytes = msg.getMessageElement("From").getBytes(true);
-		final byte[] fromNameBytes = msg.getMessageElement("FromName").getBytes(true);
-
-		Log.d(JxtaApp.TAG, "MESSAGE FROM " + new String(fromNameBytes) +
-				" (" + new Date() + "): " +
-				new String(msgBytes) + 
-				" (PeerID: " + new String(fromBytes) + ")");
-		
-		JxtaApp.handler.post(new Runnable() {
-			public void run() {
-				JxtaApp.txtChat.setText(JxtaApp.txtChat.getText() + "\n\n"
-						+ new String(fromNameBytes) + " (" + new Date() + "):\n" + new String(msgBytes));
-			}
-		});
 	}
 
 	/**

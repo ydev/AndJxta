@@ -8,14 +8,14 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
 
-import net.jxta.endpoint.ByteArrayMessageElement;
 import net.jxta.endpoint.Message;
-import net.jxta.endpoint.MessageElement;
 import net.jxta.id.IDFactory;
 import net.jxta.peer.PeerID;
 import net.jxta.peergroup.PeerGroup;
 import net.jxta.peergroup.PeerGroupID;
 import net.jxta.pipe.OutputPipe;
+import net.jxta.pipe.PipeMsgEvent;
+import net.jxta.pipe.PipeMsgListener;
 import net.jxta.pipe.PipeService;
 import net.jxta.platform.ConfigurationFactory;
 import net.jxta.platform.NetworkConfigurator;
@@ -24,7 +24,7 @@ import net.jxta.protocol.PipeAdvertisement;
 import peerdroid.jxta4android.JxtaApp;
 import android.util.Log;
 
-public class Jxta {
+public class Jxta implements PipeMsgListener {
 	private NetworkConfigurator configurator;
 	private NetworkManager networkManager;
 	private PeerGroup netPeerGroup;
@@ -35,12 +35,17 @@ public class Jxta {
 	
 	private Discovery discovery;
 	private HashMap<String, OutputPipe> establishedPipes;
+	private FileTransfer fileTransferService;
+	private TextTransfer textTransferService;
 	
 	private String instanceName;
 	private File cacheHome;
 	private String username;
 	private String password;
 	private String description;
+	
+	public static final String MESSAGE_TYPE_TEXT = "TEXT";
+	public static final String MESSAGE_TYPE_FILE = "FILE";
 	
 	public void start(String name, File cache, String user,
 			String pass) {
@@ -57,16 +62,24 @@ public class Jxta {
 		}
 		
 		// discovery
-		Thread discoveryServerThread = new Thread(discovery = new Discovery(networkManager, instanceName), "Discovery Thread");
+		Thread discoveryServerThread = new Thread(discovery = new Discovery(networkManager, instanceName, this), "Discovery Thread");
 		discoveryServerThread.start();
 		
 		establishedPipes = new HashMap<String, OutputPipe>();
+		
+		fileTransferService = new FileTransfer(netPeerGroup.getPeerID().toString(), instanceName);
+		textTransferService = new TextTransfer(netPeerGroup.getPeerID().toString(), instanceName);
 		
 		//waitForInput();
 		waitForQuit();
 	}
 
 	public void stop() {
+		for (OutputPipe pipe : establishedPipes.values()) {
+			if (!pipe.isClosed())
+				pipe.close();
+		}
+		
 		netPeerGroup.stopApp();
 	}
 
@@ -112,7 +125,7 @@ public class Jxta {
 			//configurator.setUseOnlyRelaySeeds(true);
 			configurator.setUseOnlyRendezvousSeeds(true);
 		}
-		 */
+		*/
 
 		/*
 		try {
@@ -161,7 +174,7 @@ public class Jxta {
 						peername = stdin.readLine();
 						System.out.println(peername);
 
-						System.out.print("send message: ");
+						System.out.print("send message ('file' for file-transfer): ");
 						message = stdin.readLine();
 						
 						sendMsgToPeer(peername, message);
@@ -188,9 +201,13 @@ public class Jxta {
 			return;
 		}
 		
-		sendMsgOnPipe(pipe, message);
+		if (message.equals("file")) {
+			fileTransferService.sendFile(pipe, "pic.jpg");
+		} else {
+			textTransferService.sendText(pipe, message);
+		}
 
-		// hold all open pipes for later use
+		// don't close, hold all open pipes for later use
 		// closePipe(pipe, peer);
 	}
 	
@@ -250,26 +267,20 @@ public class Jxta {
 		Log.d(JxtaApp.TAG, "Pipe to peer closed.");
 	}
 	
-	private void sendMsgOnPipe(OutputPipe pipe, String data) {
-		Log.d(JxtaApp.TAG, "Try to send message now...");
-		try {
-			Message msg = new Message();
-			MessageElement fromElem = new ByteArrayMessageElement(
-					"From", null, netPeerGroup.getPeerID().toString().getBytes(
-							"ISO-8859-1"), null);
-			MessageElement fromNameElem = new ByteArrayMessageElement("FromName",
-					null, instanceName.getBytes("ISO-8859-1"), null);
-			MessageElement msgElem = new ByteArrayMessageElement("Msg",
-					null, data.getBytes("ISO-8859-1"), null);
+	/**
+	 * 
+	 */
+	public void pipeMsgEvent(PipeMsgEvent event) {
+		Message msg = event.getMessage();
 
-			msg.addMessageElement(fromElem);
-			msg.addMessageElement(fromNameElem);
-			msg.addMessageElement(msgElem);
-			pipe.send(msg);
-		} catch (IOException e1) {
-			e1.printStackTrace();
+		if (msg.getMessageElement("Type").toString().equals(MESSAGE_TYPE_TEXT)) {
+			textTransferService.receiveText(msg);
+		} else if (msg.getMessageElement("Type").toString().equals(
+				MESSAGE_TYPE_FILE)) {
+			fileTransferService.receiveFilePackage(msg);
+		} else {
+			Log.d(JxtaApp.TAG, "No Service for this message type!");
 		}
-		Log.d(JxtaApp.TAG, "Message was send");
 	}
 
 	private void waitForQuit() {
