@@ -48,7 +48,7 @@ public class FileTransfer {
 						instanceName, null));
 
 				msg.addMessageElement(new StringMessageElement("Filename",
-						filename, null));
+						file.getName(), null));
 				msg.addMessageElement(new StringMessageElement(
 						"FilePackageSize", String.valueOf((Math.round((file
 								.length() / PACKAGE_SIZE)) + 2)), null));

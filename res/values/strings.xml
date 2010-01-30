@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="lblFilename">Filename</string>
+    <string name="btnOpenFileText">open</string>
+    <string name="btnSendFileText">send</string>
     <string name="lblPeerListHeader">Discovered peers in network:</string>
     <string name="btnSendText">send</string>
     
@@ -13,4 +16,9 @@
 <string name="lblUsername">Username:</string>
 <string name="lblSeedingServerURL">Seeding Server URL:</string>
 <string name="lblChatHeaderText">Message</string>
+
+
+    <string name="filemanager_not_installed">No compatible file manager found</string>
+    <string name="filemanager_open_title">Select file to open</string>
+    <string name="filemanager_open_button">Open</string>
 </resources>

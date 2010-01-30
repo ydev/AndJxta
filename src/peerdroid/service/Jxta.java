@@ -191,7 +191,7 @@ public class Jxta implements PipeMsgListener {
 						System.out.print("send message ('file' for file-transfer): ");
 						message = stdin.readLine();
 						
-						sendMsgToPeer(peername, message);
+						sendMsgToPeer(peername, message, MESSAGE_TYPE_TEXT);
 					} catch (IOException e2) {
 						e2.printStackTrace();
 					}
@@ -200,7 +200,7 @@ public class Jxta implements PipeMsgListener {
 		}.start();
 	}
 	
-	public boolean sendMsgToPeer(String peername, String message) {
+	public boolean sendMsgToPeer(String peername, String message, String messageType) {
 		PipeAdvertisement peer = getPipeAdvertisementByName(peername);
 		
 		if (peer == null) {
@@ -215,8 +215,10 @@ public class Jxta implements PipeMsgListener {
 			return false;
 		}
 		
-		textTransferService.sendText(pipe, message);
-		//fileTransferService.sendFile(pipe, "pic.jpg");
+		if (messageType.equals(MESSAGE_TYPE_FILE))
+			fileTransferService.sendFile(pipe, message);
+		else //if (messageType.equals(MESSAGE_TYPE_TEXT))
+			textTransferService.sendText(pipe, message);
 
 		// don't close, hold all open pipes for later use
 		// closePipe(pipe, peer);
