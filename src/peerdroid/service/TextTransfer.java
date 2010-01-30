@@ -1,6 +1,7 @@
 package peerdroid.service;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import net.jxta.endpoint.Message;
@@ -55,11 +56,16 @@ public class TextTransfer {
 		JxtaApp.handler.post(new Runnable() {
 			public void run() {
 				Peer peer = jxtaService.getPeerByName(fromName);
-				peer
-						.addHistory(fromName + " (" + new Date() + "):\n"
-								+ content);
-				JxtaApp.txtChatHistory.append("\n" + fromName + " ("
-						+ new Date() + "):\n" + content);
+				peer.addHistory(fromName
+						+ " ("
+						+ new SimpleDateFormat("dd.MM.yy HH:mm:ss")
+								.format(new Date()) + "):\n" + content);
+				if (JxtaApp.txtChatHistory != null)
+					JxtaApp.txtChatHistory.append("\n> "
+							+ fromName
+							+ " ("
+							+ new SimpleDateFormat("dd.MM.yy HH:mm:ss")
+									.format(new Date()) + "):\n" + content);
 			}
 		});
 	}

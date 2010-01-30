@@ -61,7 +61,7 @@ public class Discovery implements Runnable, DiscoveryListener {
 	public void run() {
 		long lifetime = 60 * 60 * 1000;
 		long expiration = 60 * 60 * 1000;
-		long waittime = 2 * 60 * 1000;
+		long waittime = 1 * 60 * 1000;
 
 		// setup discovery server
 		try {
@@ -211,7 +211,7 @@ public class Discovery implements Runnable, DiscoveryListener {
 		JxtaApp.handler.post(new Runnable() {
 			public void run() {
 				synchronized (peerList) {
-					//JxtaApp.lstPeerListElements.clear();
+					JxtaApp.lstPeerListElements.clear();
 					
 					for (Peer peer : peerList) {
 						Map<String, String> map = new HashMap<String, String>();

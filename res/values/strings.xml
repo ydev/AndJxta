@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="lblPeerListHeader">Peer List:</string>
+    <string name="lblPeerListHeader">Discovered peers in network:</string>
     <string name="btnSendText">send</string>
     
     <string name="btnStartText">Start P2P Network...</string>
@@ -12,4 +12,5 @@
 <string name="conFile">Start file transfer...</string>
 <string name="lblUsername">Username:</string>
 <string name="lblSeedingServerURL">Seeding Server URL:</string>
+<string name="lblChatHeaderText">Message</string>
 </resources>

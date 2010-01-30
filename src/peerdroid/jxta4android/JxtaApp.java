@@ -1,8 +1,10 @@
 package peerdroid.jxta4android;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import peerdroid.service.Jxta;
@@ -58,7 +60,7 @@ public class JxtaApp extends Activity {
 		btnStart = (Button) findViewById(R.id.btnStart);
 		txtInstanceName = (EditText) findViewById(R.id.txtInstanceName);
 		txtSeedingServer = (EditText) findViewById(R.id.txtSeedingServer);
-
+		
 		View.OnClickListener btnStart_OnClickListener = new View.OnClickListener() {
 			public void onClick(View view) {
 				dialog = ProgressDialog.show(JxtaApp.this, "",
@@ -167,19 +169,25 @@ public class JxtaApp extends Activity {
 
 		View.OnClickListener btnSend_OnClickListener = new View.OnClickListener() {
 			public void onClick(View view) {
-				if (jxtaService.sendMsgToPeer(peer.getName(), txtMessage.getText().toString())) {
-					peer.addHistory("< " + txtInstanceName.getText().toString()
-							+ " (" + new Date() + "):\n"
+				if (jxtaService.sendMsgToPeer(peer.getName(), txtMessage
+						.getText().toString())) {
+					peer.addHistory("< "
+							+ txtInstanceName.getText().toString()
+							+ " ("
+							+ new SimpleDateFormat("dd.MM.yy HH:mm:ss")
+									.format(new Date()) + "):\n"
 							+ txtMessage.getText().toString());
-					txtChatHistory
-					.append("\n" + "< "
-							+ txtInstanceName.getText().toString() + " ("
-							+ new Date() + "):\n"
+					txtChatHistory.append("\n"
+							+ "< "
+							+ txtInstanceName.getText().toString()
+							+ " ("
+							+ new SimpleDateFormat("dd.MM.yy HH:mm:ss")
+									.format(new Date()) + "):\n"
 							+ txtMessage.getText().toString());
-					
-					//txtMessage.setText("");
+
+					// txtMessage.setText("");
 				} else {
-					
+
 				}
 
 			}

@@ -109,8 +109,8 @@ public class Jxta implements PipeMsgListener {
 				e.printStackTrace();
 			}
 			ConfigurationFactory factory = ConfigurationFactory.newInstance();
-			//factory.setUseOnlyRelaySeeds(true);
 			factory.setUseOnlyRendezvousSeeds(true);
+			factory.setUseOnlyRelaySeeds(true);
 		}
 		
 		/*

@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import net.jxta.endpoint.ByteArrayMessageElement;
@@ -114,7 +115,9 @@ public class FileTransfer {
 		}
 
 		Log.d(JxtaApp.TAG, "FILE-PACKAGE (" + packageNo + "/" + filePackageSize
-				+ ") FROM " + new String(fromName) + " (" + new Date() + "): "
-				+ new String(filename) + " (PeerID: " + new String(from) + ")");
+				+ ") FROM " + new String(fromName) + " ("
+				+ new SimpleDateFormat("dd.MM.yy HH:mm:ss").format(new Date())
+				+ "): " + new String(filename) + " (PeerID: "
+				+ new String(from) + ")");
 	}
 }

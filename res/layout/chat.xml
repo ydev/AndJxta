@@ -1,14 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout 
-  xmlns:android="http://schemas.android.com/apk/res/android"
-  android:layout_width="wrap_content"
-  android:layout_height="wrap_content">
-<ScrollView android:layout_height="wrap_content" android:layout_width="fill_parent" android:id="@+id/scrChat"><TextView android:layout_height="wrap_content" android:layout_width="fill_parent" android:id="@+id/txtChatHistory"></TextView></ScrollView>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_height="fill_parent" android:layout_width="fill_parent" android:orientation="vertical">
 
 
-<Button android:layout_width="wrap_content" android:layout_height="wrap_content" android:id="@+id/btnSend" android:text="send" android:layout_alignParentRight="true" android:layout_below="@+id/scrChat"></Button><EditText android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_below="@+id/scrChat" android:text="test message" android:id="@+id/txtMessage" android:layout_toLeftOf="@+id/btnSend"></EditText>
+<TextView android:layout_height="wrap_content" android:id="@+id/lblChatHeader" 
+android:text="@string/lblChatHeaderText" android:layout_width="fill_parent"></TextView>
+
+	<View android:layout_height="2dip" android:background="#FF909090"
+		android:layout_width="fill_parent" />
+
+	<ScrollView android:layout_width="fill_parent" android:id="@+id/scrChat"
+		 android:layout_height="wrap_content" android:layout_marginBottom="50sp">
+		
+	
+<TextView android:layout_width="fill_parent" android:id="@+id/txtChatHistory" 
+android:layout_height="fill_parent"></TextView></ScrollView>
+
+
+	<RelativeLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="-50sp">
+	
+	<Button android:layout_width="wrap_content" android:layout_height="wrap_content" android:id="@+id/btnSend" android:text="send" android:layout_alignParentRight="true" android:layout_below="@+id/scrChat"></Button>
+	<EditText android:layout_width="fill_parent"
+		android:layout_height="wrap_content" android:layout_below="@+id/scrChat"
+		android:text="test message" android:id="@+id/txtMessage"
+		android:layout_toLeftOf="@+id/btnSend"></EditText>
+
+	</RelativeLayout>
 
 
 
 
-</RelativeLayout>
+</LinearLayout>
