@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="fill_parent" android:layout_height="wrap_content"
+	android:stretchColumns="0" android:padding="5dp">
+
+	<TableRow>
+
+		<LinearLayout android:layout_width="wrap_content"
+			android:layout_height="wrap_content" android:orientation="vertical">
+			<LinearLayout android:layout_height="wrap_content"
+				android:orientation="horizontal" android:layout_width="fill_parent">
+				<TextView android:textSize="16sp" android:textStyle="bold"
+					android:id="@+id/peer_list_item_name" android:layout_height="wrap_content"
+					android:layout_width="wrap_content">
+				</TextView>
+				<TextView android:textSize="16sp" android:id="@+id/peer_list_item_desc"
+					android:layout_width="wrap_content" android:gravity="right"
+					android:layout_height="wrap_content">
+				</TextView>
+			</LinearLayout>
+			<TextView android:textSize="10sp"
+				android:id="@+id/peer_list_item_advertisement" android:layout_width="fill_parent"
+				android:layout_height="wrap_content">
+			</TextView>
+		</LinearLayout>
+
+	</TableRow>
+
+</TableLayout>

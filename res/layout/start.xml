@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:orientation="vertical" android:layout_width="fill_parent"
+	android:layout_height="fill_parent">
+
+	<ImageView android:id="@+id/ImageView01" android:layout_height="wrap_content" android:layout_gravity="center" android:layout_width="wrap_content" android:layout_margin="20sp" android:src="@drawable/peerdroid"></ImageView><TextView android:layout_width="wrap_content"
+		android:layout_height="wrap_content" android:id="@+id/lblUsername" android:text="@string/lblUsername"></TextView>
+	<EditText android:layout_height="wrap_content"
+		android:layout_width="fill_parent" android:id="@+id/txtInstanceName"
+		android:text="@string/txtInstanceNameText"></EditText>
+	<TextView android:layout_width="wrap_content"
+		android:layout_height="wrap_content" android:id="@+id/lblSeedingServer" android:text="@string/lblSeedingServerURL"></TextView>
+	<EditText android:layout_height="wrap_content" android:id="@+id/txtSeedingServer"
+		android:text="@string/txtSeedingServerText" android:layout_width="fill_parent"></EditText>
+	<Button android:layout_width="wrap_content"
+		android:layout_height="wrap_content" android:layout_gravity="center"
+		android:id="@+id/btnStart" android:text="@string/btnStartText"></Button>
+
+
+
+</LinearLayout>
