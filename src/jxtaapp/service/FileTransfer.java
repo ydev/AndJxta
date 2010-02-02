@@ -1,4 +1,4 @@
-package peerdroid.service;
+package jxtaapp.service;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -8,24 +8,55 @@ import java.io.RandomAccessFile;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import jxtaapp.ui.JxtaApp;
 import net.jxta.endpoint.ByteArrayMessageElement;
 import net.jxta.endpoint.Message;
+import net.jxta.endpoint.MessageElement;
 import net.jxta.endpoint.StringMessageElement;
 import net.jxta.pipe.OutputPipe;
-import peerdroid.jxta4android.JxtaApp;
 import android.util.Log;
 
+/**
+ * Responsible for managing file transfers. The {@link Message} consists of the
+ * following {@link MessageElement}s:
+ * <ol>
+ * <li>StringMessageElement: "Type" as name, for types see
+ * {@link Jxta.MessageType}</li>
+ * <li>StringMessageElement: "From" as name, the peer ID of the sender</li>
+ * <li>StringMessageElement: "FromName" as name, the name of the sender</li>
+ * <li>StringMessageElement: "Content" as name, a file part</li>
+ * </ol>
+ */
 public class FileTransfer {
 	private final int PACKAGE_SIZE = 100000;
+	private final String DIRECTORY_FOR_RECEIVED = "/sdcard";
 	private String peerId;
 	private String instanceName;
 
+	/**
+	 * Constructor for file transfer manager
+	 * 
+	 * @param peerId
+	 *            ID of the peer in JXTAs format
+	 * @param instanceName
+	 *            Name of own peer
+	 */
 	public FileTransfer(String peerId, String instanceName) {
 		this.peerId = peerId;
 		this.instanceName = instanceName;
 	}
 
-	public void sendFile(OutputPipe op, String filename) {
+	/**
+	 * Build a JXTA message object, splits the file into packets of size
+	 * {@link #PACKAGE_SIZE} in bytes and sends this parts over the given output
+	 * pipe.
+	 * 
+	 * @param pipe
+	 *            An output pipe for the message
+	 * @param filepath
+	 *            Path of the file to send
+	 */
+	public void sendFile(OutputPipe pipe, String filepath) {
 		File file;
 		FileInputStream fileStream;
 		int length;
@@ -33,22 +64,22 @@ public class FileTransfer {
 		byte[] buffer = new byte[PACKAGE_SIZE];
 
 		try {
-			file = new File(filename);
-			fileStream = new FileInputStream(filename);
+			file = new File(filepath);
+			fileStream = new FileInputStream(filepath);
 
 			do {
 				length = fileStream.read(buffer);
 
 				Message msg = new Message();
-				msg.addMessageElement(new StringMessageElement("Type", String
-						.valueOf(Jxta.MESSAGE_TYPE_FILE), null));
+				msg.addMessageElement(new StringMessageElement("Type",
+						Jxta.MessageType.FILE.toString(), null));
 				msg.addMessageElement(new StringMessageElement("From", peerId,
 						null));
 				msg.addMessageElement(new StringMessageElement("FromName",
 						instanceName, null));
 
-				msg.addMessageElement(new StringMessageElement("Filename",
-						file.getName(), null));
+				msg.addMessageElement(new StringMessageElement("Filename", file
+						.getName(), null));
 				msg.addMessageElement(new StringMessageElement(
 						"FilePackageSize", String.valueOf((Math.round((file
 								.length() / PACKAGE_SIZE)) + 2)), null));
@@ -67,7 +98,7 @@ public class FileTransfer {
 				// System.out.println("send content (" + String.valueOf(length)
 				// + "; " + String.valueOf(count) + "): " + new String(buffer));
 
-				op.send(msg);
+				pipe.send(msg);
 			} while (length != -1);
 			fileStream.close();
 
@@ -80,11 +111,21 @@ public class FileTransfer {
 		}
 	}
 
+	/**
+	 * Handles all receiving file messages (respectively the parts), extracts
+	 * the parts and combine it to the full file. It stores all parts directly
+	 * in the predefined directory {@link #DIRECTORY_FOR_RECEIVED}
+	 * 
+	 * @param jxtaService
+	 *            {@link jxtaapp.service.Jxta} object
+	 * @param msg
+	 *            The received message
+	 */
 	public void receiveFilePackage(final Jxta jxtaService, Message msg) {
 		String from = msg.getMessageElement("From").toString();
-		String fromName = msg.getMessageElement("FromName").toString();
+		final String fromName = msg.getMessageElement("FromName").toString();
 
-		String filename = msg.getMessageElement("Filename").toString();
+		final String filename = msg.getMessageElement("Filename").toString();
 		int filePackageSize = Integer.valueOf(
 				msg.getMessageElement("FilePackageSize").toString()).intValue();
 		int packageSize = Integer.valueOf(
@@ -98,7 +139,8 @@ public class FileTransfer {
 
 		RandomAccessFile raf;
 		try {
-			raf = new RandomAccessFile("/sdcard/received_" + filename, "rw");
+			raf = new RandomAccessFile(DIRECTORY_FOR_RECEIVED + "/received_"
+					+ filename, "rw");
 			if (packageSize != -1) {
 				raf.seek((packageNo - 1) * PACKAGE_SIZE);
 				raf.write(content, 0, packageSize);
@@ -119,5 +161,15 @@ public class FileTransfer {
 				+ new SimpleDateFormat("dd.MM.yy HH:mm:ss").format(new Date())
 				+ "): " + new String(filename) + " (PeerID: "
 				+ new String(from) + ")");
+
+		JxtaApp.handler.post(new Runnable() {
+			public void run() {
+				Peer peer = jxtaService.getPeerByName(fromName);
+
+				peer.addHistory("> " + fromName, new SimpleDateFormat(
+						"dd.MM.yy HH:mm:ss").format(new Date()),
+						"Receive file " + filename);
+			}
+		});
 	}
 }

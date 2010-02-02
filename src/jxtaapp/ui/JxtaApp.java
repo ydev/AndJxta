@@ -1,4 +1,4 @@
-package peerdroid.jxta4android;
+package jxtaapp.ui;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -7,10 +7,12 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import jxtaapp.service.Jxta;
+import jxtaapp.service.Peer;
+
 import org.openintents.intents.FileManagerIntents;
 
-import peerdroid.service.Jxta;
-import peerdroid.service.Peer;
+import peerdroid.jxta4android.R;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
@@ -34,6 +36,9 @@ import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.Toast;
 
+/**
+ * One activity for whole application
+ */
 public class JxtaApp extends Activity {
 	public static String TAG = "AndJxta";
 	private Jxta jxtaService;
@@ -77,8 +82,7 @@ public class JxtaApp extends Activity {
 				dialog = ProgressDialog.show(view.getRootView().getContext(),
 						"", "Starting. Please wait...", true, false);
 
-				jxtaService = new Jxta();
-				jxtaService.setup(txtInstanceName.getText().toString(),
+				jxtaService = new Jxta(txtInstanceName.getText().toString(),
 						getFileStreamPath("jxta"), txtInstanceName.getText()
 								.toString(), "", txtSeedingServer.getText()
 								.toString());
@@ -99,9 +103,11 @@ public class JxtaApp extends Activity {
 			}
 		};
 		btnStart.setOnClickListener(btnStart_OnClickListener);
-
 	}
 
+	/**
+	 * View for peer list in the network.
+	 */
 	public void createPeerListLayout() {
 		// peer list view
 		lstPeerList = (ListView) findViewById(R.id.lstPeerList);
@@ -126,6 +132,8 @@ public class JxtaApp extends Activity {
 	}
 
 	/**
+	 * Context menu for actions on a peer.
+	 * 
 	 * @see android.view.View.OnCreateContextMenuListener#onCreateContextMenu(android.view.ContextMenu,
 	 *      android.view.View, android.view.ContextMenu.ContextMenuInfo)
 	 */
@@ -152,6 +160,11 @@ public class JxtaApp extends Activity {
 
 	}
 
+	/**
+	 * If an item from the context menu is selected.
+	 * 
+	 * @param item
+	 */
 	public boolean onContextItemSelected(MenuItem item) {
 		AdapterView.AdapterContextMenuInfo info;
 		try {
@@ -187,11 +200,18 @@ public class JxtaApp extends Activity {
 		}
 	}
 
+	/**
+	 * View for a chat session with one other peer.
+	 * 
+	 * @param peer
+	 */
 	public void createChatLayout(final Peer peer) {
 		txtMessage = (EditText) findViewById(R.id.txtMessage);
 		btnSend = (Button) findViewById(R.id.btnSend);
 		lstChatHistory = (ListView) findViewById(R.id.lstChatHistory);
-		
+
+		lstChatHistory
+				.setTranscriptMode(ListView.TRANSCRIPT_MODE_ALWAYS_SCROLL);
 		lstChatHistoryElements = new ArrayList<Map<String, String>>();
 
 		String[] from = { "name", "time", "text" };
@@ -205,14 +225,14 @@ public class JxtaApp extends Activity {
 		View.OnClickListener btnSend_OnClickListener = new View.OnClickListener() {
 			public void onClick(View view) {
 				if (jxtaService.sendMsgToPeer(peer.getName(), txtMessage
-						.getText().toString(), Jxta.MESSAGE_TYPE_TEXT)) {
+						.getText().toString(), Jxta.MessageType.TEXT)) {
 					peer.addHistory("< " + peer.getName(),
 							new SimpleDateFormat("dd.MM.yy HH:mm:ss")
 									.format(new Date()), txtMessage.getText()
 									.toString());
 
 					Map<String, String> map = new HashMap<String, String>();
-					map.put("name", peer.getName());
+					map.put("name", "< " + peer.getName());
 					map.put("time", new SimpleDateFormat("dd.MM.yy HH:mm:ss")
 							.format(new Date()));
 					map.put("text", txtMessage.getText().toString());
@@ -229,11 +249,19 @@ public class JxtaApp extends Activity {
 		btnSend.setOnClickListener(btnSend_OnClickListener);
 
 		for (HashMap<String, String> item : peer.getHistory()) {
-			JxtaApp.lstChatHistoryElements.add(item);
+			JxtaApp.lstChatHistoryElements.add(0, item);
 		}
 		JxtaApp.lstChatHistoryAdapter.notifyDataSetChanged();
 	}
 
+	/**
+	 * View for sending a file to another peer. Starts with a call to the file
+	 * manager for selecting a specific file (<a
+	 * href="http://www.openintents.org/en/node/159">OI File Manager
+	 * website</a>).
+	 * 
+	 * @param peer
+	 */
 	public void createFileLayout(final Peer peer) {
 		txtFilename = (EditText) findViewById(R.id.txtFilename);
 		btnOpenFilemanager = (ImageButton) findViewById(R.id.btnOpenFilemanager);
@@ -276,7 +304,7 @@ public class JxtaApp extends Activity {
 				}
 
 				if (jxtaService.sendMsgToPeer(peer.getName(), txtFilename
-						.getText().toString(), Jxta.MESSAGE_TYPE_FILE)) {
+						.getText().toString(), Jxta.MessageType.FILE)) {
 					Toast.makeText(view.getRootView().getContext(),
 							"File transfer was successful", Toast.LENGTH_LONG)
 							.show();
@@ -293,6 +321,9 @@ public class JxtaApp extends Activity {
 		btnSendFile.setOnClickListener(btnSendFile_OnClickListener);
 	}
 
+	/**
+	 * Stop also the network on activity destroy
+	 */
 	protected void onDestroy() {
 		super.onDestroy();
 
@@ -300,6 +331,10 @@ public class JxtaApp extends Activity {
 			jxtaService.stop();
 	}
 
+	/**
+	 * Handle the back-button to change the view and at the end close the
+	 * application
+	 */
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		if (keyCode == KeyEvent.KEYCODE_BACK) {

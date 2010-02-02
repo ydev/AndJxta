@@ -19,7 +19,7 @@ public final class R {
     public static final class id {
         public static final int ImageView01=0x7f05000f;
         public static final int btnOpenFilemanager=0x7f050009;
-        public static final int btnSend=0x7f050003;
+        public static final int btnSend=0x7f050002;
         public static final int btnSendFile=0x7f05000a;
         public static final int btnStart=0x7f050014;
         public static final int chat_history_item_name=0x7f050005;
@@ -28,12 +28,12 @@ public final class R {
         public static final int lblChatHeader=0x7f050000;
         public static final int lblSeedingServer=0x7f050012;
         public static final int lblUsername=0x7f050010;
-        public static final int lstChatHistory=0x7f050002;
+        public static final int lstChatHistory=0x7f050001;
         public static final int lstPeerList=0x7f05000b;
         public static final int peer_list_item_advertisement=0x7f05000e;
         public static final int peer_list_item_desc=0x7f05000d;
         public static final int peer_list_item_name=0x7f05000c;
-        public static final int scrChat=0x7f050001;
+        public static final int scrChat=0x7f050003;
         public static final int txtFilename=0x7f050008;
         public static final int txtInstanceName=0x7f050011;
         public static final int txtMessage=0x7f050004;

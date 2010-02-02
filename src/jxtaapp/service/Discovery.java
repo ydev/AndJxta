@@ -1,4 +1,4 @@
-package peerdroid.service;
+package jxtaapp.service;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import jxtaapp.ui.JxtaApp;
 import net.jxta.discovery.DiscoveryEvent;
 import net.jxta.discovery.DiscoveryListener;
 import net.jxta.discovery.DiscoveryService;
@@ -23,9 +24,17 @@ import net.jxta.platform.NetworkManager;
 import net.jxta.protocol.DiscoveryResponseMsg;
 import net.jxta.protocol.PeerAdvertisement;
 import net.jxta.protocol.PipeAdvertisement;
-import peerdroid.jxta4android.JxtaApp;
 import android.util.Log;
 
+/**
+ * Responsible for discover the peer-to-peer network to find other peers and
+ * secondly to publish the own peer advertisement. The discovery service wrapper
+ * runs in this own thread, creates own pipe advertisement, handles received
+ * discovery messages, manages a list of peers in the network and sends a
+ * discovery message every {@link #DISCOVERY_WAITTIME} milliseconds.
+ * 
+ * @see net.jxta.discovery.DiscoveryService
+ */
 public class Discovery implements Runnable, DiscoveryListener {
 	private NetworkManager manager;
 	private String instanceName;
@@ -43,6 +52,16 @@ public class Discovery implements Runnable, DiscoveryListener {
 	private String advertisementType;
 	private String advertisementName;
 
+	/**
+	 * Constructor for discovery service wrapper, creates also the own pipe
+	 * advertisement.
+	 * 
+	 * @param manager
+	 * @param instanceName
+	 *            Name of own peer
+	 * @param pipeMsgListener
+	 *            Listener for messages incoming at the input-pipe
+	 */
 	public Discovery(NetworkManager manager, String instanceName,
 			PipeMsgListener pipeMsgListener) {
 		this.manager = manager;
@@ -63,6 +82,9 @@ public class Discovery implements Runnable, DiscoveryListener {
 		createPipeAdvertisement();
 	}
 
+	/**
+	 * Starts the discovery service wrapper
+	 */
 	public void run() {
 		// setup discovery server
 		try {
@@ -136,7 +158,7 @@ public class Discovery implements Runnable, DiscoveryListener {
 	}
 
 	/**
-	 * Creates own pipe advertisement
+	 * Creates own pipe advertisement for publishing
 	 */
 	public void createPipeAdvertisement() {
 		PipeAdvertisement adv = (PipeAdvertisement) AdvertisementFactory
@@ -148,6 +170,9 @@ public class Discovery implements Runnable, DiscoveryListener {
 		advertisement = adv;
 	}
 
+	/**
+	 * @return Own pipe advertisement
+	 */
 	public PipeAdvertisement getPipeAdvertisement() {
 		return advertisement;
 	}
@@ -188,7 +213,6 @@ public class Discovery implements Runnable, DiscoveryListener {
 
 				// Log.d(JXTA4JSE.TAG, "   Type: " + adv.getClass().toString());
 				// + adv.toString());
-
 				if (adv instanceof PipeAdvertisement) {
 					PipeAdvertisement pipeAdv = (PipeAdvertisement) adv;
 
@@ -216,6 +240,12 @@ public class Discovery implements Runnable, DiscoveryListener {
 
 	}
 
+	/**
+	 * Add a discovered peer to the local list and also checks if it is already
+	 * included there.
+	 * 
+	 * @param peer
+	 */
 	private synchronized void addPeerListItem(Peer peer) {
 		if (peerList.contains(peer)) {
 			Peer peerInList = peerList.get(peerList.indexOf(peer));
@@ -246,6 +276,9 @@ public class Discovery implements Runnable, DiscoveryListener {
 		});
 	}
 
+	/**
+	 * @return List of all discovery peers
+	 */
 	public synchronized List<Peer> getPeerList() {
 		return peerList;
 	}

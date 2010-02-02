@@ -1,26 +1,40 @@
-package peerdroid.service;
+package jxtaapp.service;
 
 import java.util.Date;
 
+import jxtaapp.ui.JxtaApp;
 import net.jxta.peergroup.PeerGroup;
 import net.jxta.rendezvous.RendezVousService;
 import net.jxta.rendezvous.RendezvousEvent;
 import net.jxta.rendezvous.RendezvousListener;
-import peerdroid.jxta4android.JxtaApp;
 import android.util.Log;
 
+/**
+ * Responsible for the connection to the rendezvous peer.
+ */
 public class Rendezvous implements RendezvousListener {
 	private boolean connected;
 	private String rdvlock = new String("rdvlock");
 	private RendezVousService peerGroupRendezvous;
 
+	/**
+	 * Constructor get the rendezvous service from the given peer group and
+	 * register self as listener for rendezvous events.
+	 * 
+	 * @param peerGroup
+	 */
 	public Rendezvous(PeerGroup peerGroup) {
 		peerGroupRendezvous = peerGroup.getRendezVousService();
-		// myPeerID = peerGroup.getPeerID().toString();
-
 		peerGroupRendezvous.addListener(this);
 	}
 
+	/**
+	 * Called when an event occurs for the Rendezvous service. On the events "",
+	 * "" and "" the connected state {@link #isConnected()} is set to true.
+	 * 
+	 * @param event
+	 *            the rendezvous event
+	 */
 	@Override
 	public void rendezvousEvent(RendezvousEvent event) {
 		String eventDescription;
@@ -72,6 +86,10 @@ public class Rendezvous implements RendezvousListener {
 		}
 	}
 
+	/**
+	 * Get connected to a rendezvous peer. Note: The connection to the network
+	 * in general is done by {@link Jxta#startJXTA()}.
+	 */
 	public void waitForRdv() {
 		Log.d(JxtaApp.TAG, "Try connecting to rendezvous peer...");
 		synchronized (rdvlock) {
