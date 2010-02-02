@@ -8,13 +8,19 @@ android:text="@string/lblChatHeaderText" android:layout_width="fill_parent"></Te
 
 	<View android:layout_height="2dip" android:background="#FF909090"
 		android:layout_width="fill_parent" />
+	
+
 
 	<ScrollView android:layout_width="fill_parent" android:id="@+id/scrChat"
-		 android:layout_height="wrap_content" android:layout_marginBottom="50sp">
+		 android:layout_marginBottom="50sp" android:layout_height="fill_parent">
 		
-	
-<TextView android:layout_width="fill_parent" android:id="@+id/txtChatHistory" 
-android:layout_height="fill_parent"></TextView></ScrollView>
+
+	<ListView android:layout_width="fill_parent"
+		android:layout_height="fill_parent" android:id="@+id/lstChatHistory"></ListView>
+
+
+
+</ScrollView>
 
 
 	<RelativeLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="-50sp">

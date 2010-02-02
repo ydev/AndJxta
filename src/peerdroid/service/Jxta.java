@@ -32,6 +32,7 @@ public class Jxta implements PipeMsgListener {
 	//private static URI rdvlist = new File("seeds.txt").toURI();
 	private static String rdvlist = "http://192.168.178.74/seeds.txt";
 	private boolean actAsRendezvous;
+	private final static long PIPE_ESTABLISHING_TIMEOUT = 1 * 60 * 1000;
 	
 	private Discovery discovery;
 	private HashMap<String, OutputPipe> establishedPipes;
@@ -266,7 +267,7 @@ public class Jxta implements PipeMsgListener {
 		PipeService pipeService = netPeerGroup.getPipeService();
 		OutputPipe outputPipe = null;
 		try {
-			outputPipe = pipeService.createOutputPipe(peerAdv, 1 * 60 * 1000);
+			outputPipe = pipeService.createOutputPipe(peerAdv, PIPE_ESTABLISHING_TIMEOUT);
 		} catch (IOException e) {
 			e.printStackTrace();
 			//JxtaApp.txtChatHistory.append("\n" + e);

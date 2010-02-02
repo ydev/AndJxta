@@ -32,11 +32,10 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
-import android.widget.TextView;
 import android.widget.Toast;
 
 public class JxtaApp extends Activity {
-	public static String TAG = "JXTA4Android";
+	public static String TAG = "AndJxta";
 	private Jxta jxtaService;
 	public static final Handler handler = new Handler();
 	public int currentLayoutId;
@@ -52,9 +51,11 @@ public class JxtaApp extends Activity {
 	private static final int CONTEXT_CHAT_ID = Menu.FIRST;
 	private static final int CONTEXT_FILE_ID = Menu.FIRST + 1;
 	// chat layout
-	public static TextView txtChatHistory = null;
 	public static EditText txtMessage = null;
 	public static Button btnSend = null;
+	public static ListView lstChatHistory = null;
+	public static SimpleAdapter lstChatHistoryAdapter = null;
+	public static ArrayList<Map<String, String>> lstChatHistoryElements = null;
 	// file layout
 	public static EditText txtFilename = null;
 	public static ImageButton btnOpenFilemanager = null;
@@ -103,7 +104,7 @@ public class JxtaApp extends Activity {
 
 	public void createPeerListLayout() {
 		// peer list view
-		ListView lstPeerList = (ListView) findViewById(R.id.lstPeerList);
+		lstPeerList = (ListView) findViewById(R.id.lstPeerList);
 		lstPeerListElements = new ArrayList<Map<String, String>>();
 
 		String[] from = { "name", "desc", "adv" };
@@ -187,27 +188,36 @@ public class JxtaApp extends Activity {
 	}
 
 	public void createChatLayout(final Peer peer) {
-		txtChatHistory = (TextView) findViewById(R.id.txtChatHistory);
 		txtMessage = (EditText) findViewById(R.id.txtMessage);
 		btnSend = (Button) findViewById(R.id.btnSend);
+		lstChatHistory = (ListView) findViewById(R.id.lstChatHistory);
+		
+		lstChatHistoryElements = new ArrayList<Map<String, String>>();
+
+		String[] from = { "name", "time", "text" };
+		int[] to = { R.id.chat_history_item_name, R.id.chat_history_item_time,
+				R.id.chat_history_item_text };
+		lstChatHistoryAdapter = new SimpleAdapter(this.getApplicationContext(),
+				lstChatHistoryElements, R.layout.chat_history_item, from, to);
+		lstChatHistory.setAdapter(lstChatHistoryAdapter);
+		lstChatHistory.setOnCreateContextMenuListener(this);
 
 		View.OnClickListener btnSend_OnClickListener = new View.OnClickListener() {
 			public void onClick(View view) {
 				if (jxtaService.sendMsgToPeer(peer.getName(), txtMessage
 						.getText().toString(), Jxta.MESSAGE_TYPE_TEXT)) {
-					peer.addHistory("< "
-							+ txtInstanceName.getText().toString()
-							+ " ("
-							+ new SimpleDateFormat("dd.MM.yy HH:mm:ss")
-									.format(new Date()) + "):\n"
-							+ txtMessage.getText().toString());
-					txtChatHistory.append("\n"
-							+ "< "
-							+ txtInstanceName.getText().toString()
-							+ " ("
-							+ new SimpleDateFormat("dd.MM.yy HH:mm:ss")
-									.format(new Date()) + "):\n"
-							+ txtMessage.getText().toString());
+					peer.addHistory("< " + peer.getName(),
+							new SimpleDateFormat("dd.MM.yy HH:mm:ss")
+									.format(new Date()), txtMessage.getText()
+									.toString());
+
+					Map<String, String> map = new HashMap<String, String>();
+					map.put("name", peer.getName());
+					map.put("time", new SimpleDateFormat("dd.MM.yy HH:mm:ss")
+							.format(new Date()));
+					map.put("text", txtMessage.getText().toString());
+					JxtaApp.lstChatHistoryElements.add(map);
+					JxtaApp.lstChatHistoryAdapter.notifyDataSetChanged();
 
 					// txtMessage.setText("");
 				} else {
@@ -218,9 +228,10 @@ public class JxtaApp extends Activity {
 		};
 		btnSend.setOnClickListener(btnSend_OnClickListener);
 
-		for (String item : peer.getHistory()) {
-			txtChatHistory.append("\n" + item);
+		for (HashMap<String, String> item : peer.getHistory()) {
+			JxtaApp.lstChatHistoryElements.add(item);
 		}
+		JxtaApp.lstChatHistoryAdapter.notifyDataSetChanged();
 	}
 
 	public void createFileLayout(final Peer peer) {

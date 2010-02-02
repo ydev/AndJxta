@@ -3,6 +3,8 @@ package peerdroid.service;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import net.jxta.endpoint.Message;
 import net.jxta.endpoint.MessageElement;
@@ -56,16 +58,18 @@ public class TextTransfer {
 		JxtaApp.handler.post(new Runnable() {
 			public void run() {
 				Peer peer = jxtaService.getPeerByName(fromName);
-				peer.addHistory(fromName
-						+ " ("
-						+ new SimpleDateFormat("dd.MM.yy HH:mm:ss")
-								.format(new Date()) + "):\n" + content);
-				if (JxtaApp.txtChatHistory != null)
-					JxtaApp.txtChatHistory.append("\n> "
-							+ fromName
-							+ " ("
-							+ new SimpleDateFormat("dd.MM.yy HH:mm:ss")
-									.format(new Date()) + "):\n" + content);
+
+				peer.addHistory("> " + fromName, new SimpleDateFormat(
+						"dd.MM.yy HH:mm:ss").format(new Date()), content);
+
+				Map<String, String> map = new HashMap<String, String>();
+				map.put("name", peer.getName());
+				map.put("time", new SimpleDateFormat("dd.MM.yy HH:mm:ss")
+						.format(new Date()));
+				map.put("text", content);
+				JxtaApp.lstChatHistoryElements.add(map);
+				JxtaApp.lstChatHistoryAdapter.notifyDataSetChanged();
+
 			}
 		});
 	}

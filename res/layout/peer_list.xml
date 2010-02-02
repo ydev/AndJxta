@@ -6,7 +6,6 @@
 		android:layout_width="fill_parent" android:gravity="center" android:textSize="16sp"></TextView>
 	<View android:background="#FF909090" android:layout_height="2dip" android:layout_width="wrap_content"/>
 
-	<ListView android:layout_width="wrap_content"
-		android:layout_height="wrap_content" android:id="@+id/lstPeerList"></ListView>
+	<ListView android:layout_height="wrap_content" android:id="@+id/lstPeerList" android:layout_width="fill_parent"></ListView>
 
 </LinearLayout>

@@ -11,11 +11,11 @@
 				android:orientation="horizontal" android:layout_width="fill_parent">
 				<TextView android:textSize="16sp" android:textStyle="bold"
 					android:id="@+id/peer_list_item_name" android:layout_height="wrap_content"
-					android:layout_width="wrap_content">
+					android:textColor="#ffffff" android:layout_width="wrap_content">
 				</TextView>
 				<TextView android:textSize="16sp" android:id="@+id/peer_list_item_desc"
-					android:layout_width="wrap_content" android:gravity="right"
-					android:layout_height="wrap_content">
+					android:gravity="right"
+					android:layout_height="wrap_content" android:layout_width="fill_parent">
 				</TextView>
 			</LinearLayout>
 			<TextView android:textSize="10sp"

@@ -34,16 +34,21 @@ public class Discovery implements Runnable, DiscoveryListener {
 	private PipeService pipeService;
 	private List<Peer> peerList;
 
+	private final static long ADVERTISEMENT_LIFETIME = 60 * 60 * 1000;
+	private final static long ADVERTISEMENT_EXPIRATION = 60 * 60 * 1000;
+	private final static long DISCOVERY_WAITTIME = 1 * 60 * 1000;
+
 	private PipeAdvertisement advertisement;
 	private ID advertisementPipeId;
 	private String advertisementType;
 	private String advertisementName;
 
-	public Discovery(NetworkManager manager, String instanceName, PipeMsgListener pipeMsgListener) {
+	public Discovery(NetworkManager manager, String instanceName,
+			PipeMsgListener pipeMsgListener) {
 		this.manager = manager;
 		this.instanceName = instanceName;
 		this.pipeMsgListener = pipeMsgListener;
-		
+
 		peerList = Collections.synchronizedList(new ArrayList<Peer>());
 
 		PeerGroup netPeerGroup = manager.getNetPeerGroup();
@@ -59,13 +64,10 @@ public class Discovery implements Runnable, DiscoveryListener {
 	}
 
 	public void run() {
-		long lifetime = 60 * 60 * 1000;
-		long expiration = 60 * 60 * 1000;
-		long waittime = 1 * 60 * 1000;
-
 		// setup discovery server
 		try {
-			pipeService.createInputPipe(getPipeAdvertisement(), pipeMsgListener);
+			pipeService
+					.createInputPipe(getPipeAdvertisement(), pipeMsgListener);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -76,15 +78,19 @@ public class Discovery implements Runnable, DiscoveryListener {
 		while (true) {
 			// Discovery Server: publish own pipe advertisement
 			try {
-				Log.d(JxtaApp.TAG, "Discovery service publish pipe advertisement (lifetime: "
-						+ lifetime + "; expiration: " + expiration + ")...");
-				discoveryService.publish(getPipeAdvertisement(), lifetime,
-						expiration);
+				Log.d(JxtaApp.TAG,
+						"Discovery service publish pipe advertisement (lifetime: "
+								+ ADVERTISEMENT_LIFETIME + "; expiration: "
+								+ ADVERTISEMENT_EXPIRATION + ")...");
+				discoveryService.publish(getPipeAdvertisement(),
+						ADVERTISEMENT_LIFETIME, ADVERTISEMENT_EXPIRATION);
 				discoveryService.remotePublish(getPipeAdvertisement(),
-						expiration);
+						ADVERTISEMENT_EXPIRATION);
 
 			} catch (Exception e) {
-				Log.d(JxtaApp.TAG, "Discovery service failed to publish pipe advertisement");
+				Log
+						.d(JxtaApp.TAG,
+								"Discovery service failed to publish pipe advertisement");
 				e.printStackTrace();
 			}
 
@@ -110,16 +116,18 @@ public class Discovery implements Runnable, DiscoveryListener {
 						// listener
 						null);
 
-				//discoveryService.getLocalAdvertisements(DiscoveryService.ADV,
-				//		null, null);
+				// discoveryService.getLocalAdvertisements(DiscoveryService.ADV,
+				// null, null);
 			} catch (Exception e) {
-				//Log.d(JxtaApp.TAG, "Failed to load local pipe advertisements");
+				// Log.d(JxtaApp.TAG,
+				// "Failed to load local pipe advertisements");
 				e.printStackTrace();
 			}
 
 			try {
-				Log.d(JxtaApp.TAG, "Discovery service sleeps for: " + waittime);
-				Thread.sleep(waittime);
+				Log.d(JxtaApp.TAG, "Discovery service sleeps for: "
+						+ DISCOVERY_WAITTIME);
+				Thread.sleep(DISCOVERY_WAITTIME);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -164,7 +172,10 @@ public class Discovery implements Runnable, DiscoveryListener {
 			peerAdv.getName();
 		name = ev.getSource().toString();
 
-		Log.d(JxtaApp.TAG, "###############################################################################################");
+		Log
+				.d(
+						JxtaApp.TAG,
+						"###############################################################################################");
 		Log.d(JxtaApp.TAG, "Got a Discovery Response ["
 				+ res.getResponseCount() + " elements] from peer: " + name);
 
@@ -198,30 +209,38 @@ public class Discovery implements Runnable, DiscoveryListener {
 					+ "; PeerAdv ID: "
 					+ peerList.get(i).getPipeAdvertisement().getID());
 
-		Log.d(JxtaApp.TAG, "###############################################################################################");
+		Log
+				.d(
+						JxtaApp.TAG,
+						"###############################################################################################");
 
 	}
 
 	private synchronized void addPeerListItem(Peer peer) {
 		if (peerList.contains(peer)) {
-			peerList.remove(peer);
+			Peer peerInList = peerList.get(peerList.indexOf(peer));
+			peerInList.setPipeAdvertisement(peer.getPipeAdvertisement());
+			peerInList.setLastUpdate(System.currentTimeMillis());
+		} else {
+			peerList.add(peer);
 		}
-		peerList.add(peer);
 
 		JxtaApp.handler.post(new Runnable() {
 			public void run() {
 				synchronized (peerList) {
 					JxtaApp.lstPeerListElements.clear();
-					
+
 					for (Peer peer : peerList) {
 						Map<String, String> map = new HashMap<String, String>();
 						map.put("name", peer.getName());
-						map.put("desc", peer.getPipeAdvertisement().getDescription());
-						map.put("adv", peer.getPipeAdvertisement().getPipeID().toString());
+						map.put("desc", peer.getPipeAdvertisement()
+								.getDescription());
+						map.put("adv", peer.getPipeAdvertisement().getPipeID()
+								.toString());
 						JxtaApp.lstPeerListElements.add(map);
 					}
 				}
-				
+
 				JxtaApp.lstPeerListAdapter.notifyDataSetChanged();
 			}
 		});
